@@ -205,8 +205,7 @@ private:
 	
 public:
 	
-	void begin(long baud, unsigned char directionPin);
-	void begin(long baud);
+	void begin(unsigned char directionPin);
 	void end(void);
 	
 	int reset(unsigned char ID);
@@ -255,7 +254,7 @@ protected:
     virtual int availableData(void) = 0;
     virtual int readData(void) = 0;
     virtual int peekData(void) = 0;
-    virtual void beginCom(long) = 0;
+    virtual void beginCom(void) = 0;
     virtual void endCom(void) = 0;
 
 };

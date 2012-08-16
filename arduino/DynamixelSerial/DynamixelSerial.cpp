@@ -71,12 +71,6 @@
 
 // Macro for Timing
 #define delayus(args) (delayMicroseconds(args))  // Delay Microseconds
-// Macro for Comunication Flow Control
-#define setDPin(DirPin,Mode)   (pinMode(DirPin,Mode))       // Select the Switch to TX/RX Mode Pin
-#define switchCom(DirPin,Mode) (digitalWrite(DirPin,Mode))  // Switch to TX/RX Mode
-
-
-// Private Methods //////////////////////////////////////////////////////////////
 
 int DynamixelSerial::read_error(void)
 {
@@ -101,16 +95,11 @@ int DynamixelSerial::read_error(void)
 
 // Public Methods //////////////////////////////////////////////////////////////
 
-void DynamixelSerial::begin(long baud, unsigned char directionPin)
+void DynamixelSerial::begin(unsigned char directionPin)
 {	
 	Direction_Pin = directionPin;
-	setDPin(Direction_Pin,OUTPUT);
-	beginCom(baud);
-}	
-
-void DynamixelSerial::begin(long baud)
-{	
-	beginCom(baud);
+    pinMode(Direction_Pin,OUTPUT);
+	beginCom();
 }	
 
 void DynamixelSerial::end()
@@ -122,7 +111,7 @@ int DynamixelSerial::reset(unsigned char ID)
 {
 	Checksum = (~(ID + AX_RESET_LENGTH + AX_RESET))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -130,7 +119,7 @@ int DynamixelSerial::reset(unsigned char ID)
 	sendData(AX_RESET);    
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 
     return (read_error());  
 }
@@ -139,7 +128,7 @@ int DynamixelSerial::ping(unsigned char ID)
 {
 	Checksum = (~(ID + AX_READ_DATA + AX_PING))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -147,7 +136,7 @@ int DynamixelSerial::ping(unsigned char ID)
 	sendData(AX_PING);    
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());              
 }
@@ -156,7 +145,7 @@ int DynamixelSerial::setID(unsigned char ID, unsigned char newID)
 {    
 	Checksum = (~(ID + AX_ID_LENGTH + AX_WRITE_DATA + AX_ID + newID))&0xFF;
 
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -166,7 +155,7 @@ int DynamixelSerial::setID(unsigned char ID, unsigned char newID)
     sendData(newID);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -176,7 +165,7 @@ int DynamixelSerial::setBD(unsigned char ID, long baud)
 	unsigned char Baud_Rate = (2000000/baud) - 1;
     Checksum = (~(ID + AX_BD_LENGTH + AX_WRITE_DATA + AX_BAUD_RATE + Baud_Rate))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                 // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -186,7 +175,7 @@ int DynamixelSerial::setBD(unsigned char ID, long baud)
     sendData(Baud_Rate);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -198,7 +187,7 @@ int DynamixelSerial::move(unsigned char ID, int Position)
     Position_L = Position;
 	Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_GOAL_POSITION_L + Position_L + Position_H))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                 // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -209,7 +198,7 @@ int DynamixelSerial::move(unsigned char ID, int Position)
     sendData(Position_H);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 
     return (read_error());                 // Return the read error
 }
@@ -223,7 +212,7 @@ int DynamixelSerial::moveSpeed(unsigned char ID, int Position, int Speed)
     Speed_L = Speed;                      // 16 bits - 2 x 8 bits variables
 	Checksum = (~(ID + AX_GOAL_SP_LENGTH + AX_WRITE_DATA + AX_GOAL_POSITION_L + Position_L + Position_H + Speed_L + Speed_H))&0xFF;
  
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -236,7 +225,7 @@ int DynamixelSerial::moveSpeed(unsigned char ID, int Position, int Speed)
     sendData(Speed_H);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());               // Return the read error
 }
@@ -247,7 +236,7 @@ int DynamixelSerial::setEndless(unsigned char ID, bool Status)
 	  char AX_CCW_AL_LT = 0;     // Changing the CCW Angle Limits for Full Rotation.
 	  Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L))&0xFF;
 	
-	  switchCom(Direction_Pin,Tx_MODE);
+	  digitalWrite(Direction_Pin,Tx_MODE);
       sendData(AX_START);                // Send Instructions over Serial
       sendData(AX_START);
       sendData(ID);
@@ -258,7 +247,7 @@ int DynamixelSerial::setEndless(unsigned char ID, bool Status)
       sendData(AX_CCW_AL_LT);
       sendData(Checksum);
       delayus(TX_DELAY_TIME);
-	  switchCom(Direction_Pin,Rx_MODE);
+	  digitalWrite(Direction_Pin,Rx_MODE);
 
 	  return(read_error());
  }
@@ -267,7 +256,7 @@ int DynamixelSerial::setEndless(unsigned char ID, bool Status)
 	 turn(ID,0,0);
 	 Checksum = (~(ID + AX_GOAL_LENGTH + AX_WRITE_DATA + AX_CCW_ANGLE_LIMIT_L + AX_CCW_AL_L + AX_CCW_AL_H))&0xFF;
 	
-	 switchCom(Direction_Pin,Tx_MODE);
+	 digitalWrite(Direction_Pin,Tx_MODE);
 	 sendData(AX_START);                 // Send Instructions over Serial
 	 sendData(AX_START);
 	 sendData(ID);
@@ -278,7 +267,7 @@ int DynamixelSerial::setEndless(unsigned char ID, bool Status)
 	 sendData(AX_CCW_AL_H);
 	 sendData(Checksum);
 	 delayus(TX_DELAY_TIME);
-	 switchCom(Direction_Pin,Rx_MODE);
+	 digitalWrite(Direction_Pin,Rx_MODE);
 	 
 	 return (read_error());                 // Return the read error
   }
@@ -293,7 +282,7 @@ int DynamixelSerial::turn(unsigned char ID, bool SIDE, int Speed)
 			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
 			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
 			
-			switchCom(Direction_Pin,Tx_MODE);
+			digitalWrite(Direction_Pin,Tx_MODE);
 			sendData(AX_START);                // Send Instructions over Serial
 			sendData(AX_START);
 			sendData(ID);
@@ -304,7 +293,7 @@ int DynamixelSerial::turn(unsigned char ID, bool SIDE, int Speed)
 			sendData(Speed_H);
 			sendData(Checksum);
 			delayus(TX_DELAY_TIME);
-			switchCom(Direction_Pin,Rx_MODE);
+			digitalWrite(Direction_Pin,Rx_MODE);
 			
 			return(read_error());               // Return the read error		
 		}
@@ -315,7 +304,7 @@ int DynamixelSerial::turn(unsigned char ID, bool SIDE, int Speed)
 			Speed_L = Speed;                     // 16 bits - 2 x 8 bits variables
 			Checksum = (~(ID + AX_SPEED_LENGTH + AX_WRITE_DATA + AX_GOAL_SPEED_L + Speed_L + Speed_H))&0xFF;
 			
-			switchCom(Direction_Pin,Tx_MODE);
+			digitalWrite(Direction_Pin,Tx_MODE);
 			sendData(AX_START);                // Send Instructions over Serial
 			sendData(AX_START);
 			sendData(ID);
@@ -326,7 +315,7 @@ int DynamixelSerial::turn(unsigned char ID, bool SIDE, int Speed)
 			sendData(Speed_H);
 			sendData(Checksum);
 			delayus(TX_DELAY_TIME);
-			switchCom(Direction_Pin,Rx_MODE);
+			digitalWrite(Direction_Pin,Rx_MODE);
 			
 			return(read_error());                // Return the read error	
 		}
@@ -339,7 +328,7 @@ int DynamixelSerial::moveRW(unsigned char ID, int Position)
     Position_L = Position;
     Checksum = (~(ID + AX_GOAL_LENGTH + AX_REG_WRITE + AX_GOAL_POSITION_L + Position_L + Position_H))&0xFF;
 
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                 // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -350,7 +339,7 @@ int DynamixelSerial::moveRW(unsigned char ID, int Position)
     sendData(Position_H);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error());                 // Return the read error
 }
@@ -364,7 +353,7 @@ int DynamixelSerial::moveSpeedRW(unsigned char ID, int Position, int Speed)
     Speed_L = Speed;                      // 16 bits - 2 x 8 bits variables
     Checksum = (~(ID + AX_GOAL_SP_LENGTH + AX_REG_WRITE + AX_GOAL_POSITION_L + Position_L + Position_H + Speed_L + Speed_H))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -377,14 +366,14 @@ int DynamixelSerial::moveSpeedRW(unsigned char ID, int Position, int Speed)
     sendData(Speed_H);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());               // Return the read error
 }
 
 void DynamixelSerial::action()
 {	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(BROADCAST_ID);
@@ -392,14 +381,14 @@ void DynamixelSerial::action()
     sendData(AX_ACTION);
     sendData(AX_ACTION_CHECKSUM);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 }
 
 int DynamixelSerial::torqueStatus( unsigned char ID, bool Status)
 {
     Checksum = (~(ID + AX_TORQUE_LENGTH + AX_WRITE_DATA + AX_TORQUE_ENABLE + Status))&0xFF;
 
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);              // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -409,7 +398,7 @@ int DynamixelSerial::torqueStatus( unsigned char ID, bool Status)
     sendData(Status);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());              // Return the read error
 }
@@ -418,7 +407,7 @@ int DynamixelSerial::ledStatus(unsigned char ID, bool Status)
 {    
     Checksum = (~(ID + AX_LED_LENGTH + AX_WRITE_DATA + AX_LED + Status))&0xFF;
 
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);              // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -428,7 +417,7 @@ int DynamixelSerial::ledStatus(unsigned char ID, bool Status)
     sendData(Status);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());              // Return the read error
 }
@@ -437,7 +426,7 @@ int DynamixelSerial::readTemperature(unsigned char ID)
 {	
     Checksum = (~(ID + AX_TEM_LENGTH  + AX_READ_DATA + AX_PRESENT_TEMPERATURE + AX_BYTE_READ))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -447,7 +436,7 @@ int DynamixelSerial::readTemperature(unsigned char ID)
     sendData(AX_BYTE_READ);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Temperature_Byte = -1;
     Time_Counter = 0;
@@ -474,7 +463,7 @@ int DynamixelSerial::readPosition(unsigned char ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_POSITION_L + AX_BYTE_READ_POS))&0xFF;
   
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -484,7 +473,7 @@ int DynamixelSerial::readPosition(unsigned char ID)
     sendData(AX_BYTE_READ_POS);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Position_Long_Byte = -1;
 	Time_Counter = 0;
@@ -515,7 +504,7 @@ int DynamixelSerial::readVoltage(unsigned char ID)
 {    
     Checksum = (~(ID + AX_VOLT_LENGTH  + AX_READ_DATA + AX_PRESENT_VOLTAGE + AX_BYTE_READ))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -525,7 +514,7 @@ int DynamixelSerial::readVoltage(unsigned char ID)
     sendData(AX_BYTE_READ);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Voltage_Byte = -1;
 	Time_Counter = 0;
@@ -552,7 +541,7 @@ int DynamixelSerial::setTempLimit(unsigned char ID, unsigned char Temperature)
 {
 	Checksum = (~(ID + AX_TL_LENGTH +AX_WRITE_DATA+ AX_LIMIT_TEMPERATURE + Temperature))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -562,7 +551,7 @@ int DynamixelSerial::setTempLimit(unsigned char ID, unsigned char Temperature)
     sendData(Temperature);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error()); 
 }
@@ -571,7 +560,7 @@ int DynamixelSerial::setVoltageLimit(unsigned char ID, unsigned char DVoltage, u
 {
 	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_DOWN_LIMIT_VOLTAGE + DVoltage + UVoltage))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -582,7 +571,7 @@ int DynamixelSerial::setVoltageLimit(unsigned char ID, unsigned char DVoltage, u
     sendData(UVoltage);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error()); 
 }
@@ -596,7 +585,7 @@ int DynamixelSerial::setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit)
     CCW_L = CCWLimit;  
 	Checksum = (~(ID + AX_VL_LENGTH +AX_WRITE_DATA+ AX_CW_ANGLE_LIMIT_L + CW_H + CW_L + AX_CCW_ANGLE_LIMIT_L + CCW_H + CCW_L))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -610,7 +599,7 @@ int DynamixelSerial::setAngleLimit(unsigned char ID, int CWLimit, int CCWLimit)
 	sendData(CCW_H);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error()); 
 }
@@ -622,7 +611,7 @@ int DynamixelSerial::setMaxTorque(unsigned char ID, int MaxTorque)
     MaxTorque_L = MaxTorque;
 	Checksum = (~(ID + AX_MT_LENGTH + AX_WRITE_DATA + AX_MAX_TORQUE_L + MaxTorque_L + MaxTorque_H))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                 // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -633,7 +622,7 @@ int DynamixelSerial::setMaxTorque(unsigned char ID, int MaxTorque)
     sendData(MaxTorque_H);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error());                 // Return the read error
 }
@@ -642,7 +631,7 @@ int DynamixelSerial::setSRL(unsigned char ID, unsigned char SRL)
 {    
 	Checksum = (~(ID + AX_SRL_LENGTH + AX_WRITE_DATA + AX_RETURN_LEVEL + SRL))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -652,7 +641,7 @@ int DynamixelSerial::setSRL(unsigned char ID, unsigned char SRL)
     sendData(SRL);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -661,7 +650,7 @@ int DynamixelSerial::setRDT(unsigned char ID, unsigned char RDT)
 {    
 	Checksum = (~(ID + AX_RDT_LENGTH + AX_WRITE_DATA + AX_RETURN_DELAY_TIME + (RDT/2)))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -671,7 +660,7 @@ int DynamixelSerial::setRDT(unsigned char ID, unsigned char RDT)
     sendData((RDT/2));
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -680,7 +669,7 @@ int DynamixelSerial::setLEDAlarm(unsigned char ID, unsigned char LEDAlarm)
 {    
 	Checksum = (~(ID + AX_LEDALARM_LENGTH + AX_WRITE_DATA + AX_ALARM_LED + LEDAlarm))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -690,7 +679,7 @@ int DynamixelSerial::setLEDAlarm(unsigned char ID, unsigned char LEDAlarm)
     sendData(LEDAlarm);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -699,7 +688,7 @@ int DynamixelSerial::setShutdownAlarm(unsigned char ID, unsigned char SALARM)
 {    
 	Checksum = (~(ID + AX_SALARM_LENGTH + AX_ALARM_SHUTDOWN + AX_ALARM_LED + SALARM))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -709,7 +698,7 @@ int DynamixelSerial::setShutdownAlarm(unsigned char ID, unsigned char SALARM)
     sendData(SALARM);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -718,7 +707,7 @@ int DynamixelSerial::setCMargin(unsigned char ID, unsigned char CWCMargin, unsig
 {
 	Checksum = (~(ID + AX_CM_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_MARGIN + CWCMargin + AX_CCW_COMPLIANCE_MARGIN + CCWCMargin))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -730,7 +719,7 @@ int DynamixelSerial::setCMargin(unsigned char ID, unsigned char CWCMargin, unsig
     sendData(CCWCMargin);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error()); 
 }
@@ -739,7 +728,7 @@ int DynamixelSerial::setCSlope(unsigned char ID, unsigned char CWCSlope, unsigne
 {
 	Checksum = (~(ID + AX_CS_LENGTH +AX_WRITE_DATA+ AX_CW_COMPLIANCE_SLOPE + CWCSlope + AX_CCW_COMPLIANCE_SLOPE + CCWCSlope))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
 	sendData(AX_START);                     
 	sendData(AX_START);
 	sendData(ID);
@@ -751,7 +740,7 @@ int DynamixelSerial::setCSlope(unsigned char ID, unsigned char CWCSlope, unsigne
     sendData(CCWCSlope);
 	sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error()); 
 }
@@ -763,7 +752,7 @@ int DynamixelSerial::setPunch(unsigned char ID, int Punch)
     Punch_L = Punch;
 	Checksum = (~(ID + AX_PUNCH_LENGTH + AX_WRITE_DATA + AX_PUNCH_L + Punch_L + Punch_H))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                 // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -774,7 +763,7 @@ int DynamixelSerial::setPunch(unsigned char ID, int Punch)
     sendData(Punch_H);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     return (read_error());                 // Return the read error
 }
@@ -783,7 +772,7 @@ int DynamixelSerial::moving(unsigned char ID)
 {	
     Checksum = (~(ID + AX_MOVING_LENGTH  + AX_READ_DATA + AX_MOVING + AX_BYTE_READ))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -793,7 +782,7 @@ int DynamixelSerial::moving(unsigned char ID)
     sendData(AX_BYTE_READ);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Moving_Byte = -1;
     Time_Counter = 0;
@@ -820,7 +809,7 @@ int DynamixelSerial::lockRegister(unsigned char ID)
 {    
 	Checksum = (~(ID + AX_LR_LENGTH + AX_WRITE_DATA + AX_LOCK + LOCK))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);                // Send Instructions over Serial
     sendData(AX_START);
     sendData(ID);
@@ -830,7 +819,7 @@ int DynamixelSerial::lockRegister(unsigned char ID)
     sendData(LOCK);
     sendData(Checksum);
 	delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
     
     return (read_error());                // Return the read error
 }
@@ -839,7 +828,7 @@ int DynamixelSerial::RWStatus(unsigned char ID)
 {	
     Checksum = (~(ID + AX_RWS_LENGTH  + AX_READ_DATA + AX_REGISTERED_INSTRUCTION + AX_BYTE_READ))&0xFF;
     
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -849,7 +838,7 @@ int DynamixelSerial::RWStatus(unsigned char ID)
     sendData(AX_BYTE_READ);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     RWS_Byte = -1;
     Time_Counter = 0;
@@ -876,7 +865,7 @@ int DynamixelSerial::readSpeed(unsigned char ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_SPEED_L + AX_BYTE_READ_POS))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -886,7 +875,7 @@ int DynamixelSerial::readSpeed(unsigned char ID)
     sendData(AX_BYTE_READ_POS);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Speed_Long_Byte = -1;
 	Time_Counter = 0;
@@ -917,7 +906,7 @@ int DynamixelSerial::readLoad(unsigned char ID)
 {	
     Checksum = (~(ID + AX_POS_LENGTH  + AX_READ_DATA + AX_PRESENT_LOAD_L + AX_BYTE_READ_POS))&0xFF;
 	
-	switchCom(Direction_Pin,Tx_MODE);
+	digitalWrite(Direction_Pin,Tx_MODE);
     sendData(AX_START);
     sendData(AX_START);
     sendData(ID);
@@ -927,7 +916,7 @@ int DynamixelSerial::readLoad(unsigned char ID)
     sendData(AX_BYTE_READ_POS);
     sendData(Checksum);
     delayus(TX_DELAY_TIME);
-	switchCom(Direction_Pin,Rx_MODE);
+	digitalWrite(Direction_Pin,Rx_MODE);
 	
     Load_Long_Byte = -1;
 	Time_Counter = 0;
