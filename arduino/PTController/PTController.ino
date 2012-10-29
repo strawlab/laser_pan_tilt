@@ -1,6 +1,7 @@
 // vi: set shiftwidth=2 tabstop=2 expandtab:
 
 #include <DynamixelSerial.h>
+#include <SPI.h>
 #include <Ethernet.h>
 
 #include "PTCConfig.h"
@@ -22,6 +23,7 @@ class DynamixelSerialPTC : public DynamixelSerial {
 
 DynamixelSerialPTC  pantilt;
 EthernetServer      server(PTC_TCP_PORT);
+uint8_t             pantilt_wait;
 
 void setup() {
   pinMode(PTC_LED_STATUS, OUTPUT);
@@ -36,6 +38,8 @@ void setup() {
 #endif
   
   pantilt.begin(PTC_COMM_DIR_PIN);
+
+  pantilt_wait = 0;
 }
 
 uint8_t ethernet_parse(EthernetClient &client)
@@ -81,6 +85,17 @@ uint8_t command_parse(uint8_t &cmd, uint8_t &type, uint16_t &val)
   return 0;
 }
 
+void wait_until_not_moving(uint8_t ID)
+{
+  uint8_t tries = 100;
+  uint8_t moving = 1;
+
+  while (moving && --tries) {
+      pantilt.isMoving(ID, moving);
+      delayMicroseconds(1000);
+  }
+}
+
 void loop() {
   uint8_t rxok = 0;
 
@@ -90,15 +105,22 @@ void loop() {
   }
 
   if (rxok) {
-    uint8_t cmd, type;
+    uint8_t cmd, type, cmdok, parseok, cmdresp;
     uint16_t val;
-    int cmdok;
 
-    cmdok = command_parse(cmd, type, val);
-    if (cmdok) {
+    parseok = command_parse(cmd, type, val);
+    if (parseok) {
+      cmdok = 0x00;
+      cmdresp = 0;
       //toggle activity LED
       digitalWrite(PTC_LED_COMMAND, digitalRead(PTC_LED_COMMAND) ? LOW : HIGH);
       switch (cmd) {
+        case 'W':
+          pantilt_wait = 1;
+          break;
+        case 'w':
+          pantilt_wait = 0;
+          break;
         case 'S':
           digitalWrite(PTC_LED_STATUS, HIGH);
           break;
@@ -113,14 +135,42 @@ void loop() {
           break;
         case 'P':
           cmdok = pantilt.move(PTC_SERVO_ID_PAN, val);
+          if (pantilt_wait)
+            wait_until_not_moving(PTC_SERVO_ID_PAN);
           break;
         case 'T':
           cmdok = pantilt.move(PTC_SERVO_ID_TILT, val);
+          if (pantilt_wait)
+            wait_until_not_moving(PTC_SERVO_ID_TILT);
+          break;
+        case 't':
+          cmdok = pantilt.getTemperature(PTC_SERVO_ID_PAN, cmdresp);
+          break;
+        case 'v':
+          cmdok = pantilt.getVoltage(PTC_SERVO_ID_PAN, cmdresp);
           break;
         default:
           cmdok = 0;
           break;
       }
+
+#if 0
+      client.write(cmd);
+      client.write(',');
+      for (int i=0; i < 20; i++) {
+        uint8_t foo = Serial1.read();
+        client.print(foo, HEX);
+        client.write(',');
+      }
+      client.write('\n');
+#else
+      client.write(cmd);
+      client.write(',');
+      client.print(cmdok, HEX);
+      client.write(',');
+      client.print(cmdresp, HEX);
+      client.write('\n');
+#endif
        
   #if PTC_DEBUG
       Serial.print("CMD: ");

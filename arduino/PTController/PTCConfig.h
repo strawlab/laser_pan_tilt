@@ -27,8 +27,8 @@ byte ptc_mac[] = {0x90, 0xA2, 0xDA, 0x00, 0x79, 0xDF};
 IPAddress ptc_ip(192,168,1,60);
 #define     PTC_TCP_PORT        23
 
-#define PTC_SERVO_ID_PAN        1
-#define PTC_SERVO_ID_TILT       2
+#define PTC_SERVO_ID_TILT       1
+#define PTC_SERVO_ID_PAN        2
 #define PTC_SERVO_BAUD          57600
 
 #define PTC_PIN_LASER           9
