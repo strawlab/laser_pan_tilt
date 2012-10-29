@@ -7,7 +7,7 @@
 #include "DynamixelSerial.h"
 
 #define TIME_OUT                    10
-#define TX_DELAY_TIME				1000
+#define TX_DELAY_TIME				700
 #define Tx_MODE                     1
 #define Rx_MODE                     0
 
@@ -15,23 +15,19 @@
 
 unsigned char DynamixelSerial::read_response(uint8_t *buf, unsigned char N)
 {
-    unsigned char tries,a,b,len,error;
+    unsigned char tries,a,b,id,len,error;
     error = 0xFF;
 
-//    return 0;
-
-	tries = 0;
-	while(!availableData() && (tries < TIME_OUT)){  // Wait for any data
-		tries++;
-		delayMicroseconds(100);
+	tries = 10;
+	while((availableData() <= (6-N)) && --tries){  // Wait for data
+		delayMicroseconds(500);
 	}
-
 
 	while (availableData() > 0){
 		a = readData();
-        b = readData();
-		if ( (a == 255) & (b == 255) ){
-			readData();                                    // Ax-12 ID
+		if ( (a == 255) & (peekData() == 255) ){
+            b = readData();
+			id = readData();                               // Ax-12 ID
 			len = readData() - 2;                          // Length
 			error = readData();
             for (int i = 0; i < len; i++) {
