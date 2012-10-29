@@ -16,6 +16,7 @@
 unsigned char DynamixelSerial::read_response(uint8_t *buf, unsigned char N)
 {
     unsigned char tries,a,b,len,error;
+    error = 0xFF;
 
 //    return 0;
 
@@ -25,7 +26,7 @@ unsigned char DynamixelSerial::read_response(uint8_t *buf, unsigned char N)
 		delayMicroseconds(100);
 	}
 
-    error = 0xFF;
+
 	while (availableData() > 0){
 		a = readData();
         b = readData();
@@ -45,7 +46,7 @@ unsigned char DynamixelSerial::read_response(uint8_t *buf, unsigned char N)
     return error;
 }
 
-unsigned char DynamixelSerial::read_register_byte(uint8_t ID, uint8_t address, uint8_t &resp)
+unsigned char DynamixelSerial::instruction_read_byte(uint8_t ID, uint8_t address, uint8_t &resp)
 {
 	unsigned char Checksum; 
 
@@ -66,9 +67,23 @@ unsigned char DynamixelSerial::read_register_byte(uint8_t ID, uint8_t address, u
     return read_response(&resp, 1);
 }
 
-unsigned char DynamixelSerial::read_response(uint8_t &resp)
+unsigned char DynamixelSerial::instruction_no_params(uint8_t ID, uint8_t cmd)
 {
-    return read_response(&resp, 1);
+	unsigned char Checksum;
+
+	Checksum = (~(ID + AX_INSTRUCTION_0_PARAMS_LENGTH + cmd))&0xFF;
+	
+	digitalWrite(Direction_Pin,Tx_MODE);
+	sendData(AX_START);                     
+	sendData(AX_START);
+	sendData(ID);
+	sendData(AX_INSTRUCTION_0_PARAMS_LENGTH);
+	sendData(cmd);    
+	sendData(Checksum);
+	delayMicroseconds(TX_DELAY_TIME);
+	digitalWrite(Direction_Pin,Rx_MODE);
+
+    return read_error();
 }
 
 void DynamixelSerial::begin(unsigned char directionPin)
@@ -81,44 +96,6 @@ void DynamixelSerial::begin(unsigned char directionPin)
 void DynamixelSerial::end()
 {
 	endCom();
-}
-
-unsigned char DynamixelSerial::reset(unsigned char ID)
-{
-	unsigned char Checksum;
-
-	Checksum = (~(ID + AX_RESET_LENGTH + AX_RESET))&0xFF;
-	
-	digitalWrite(Direction_Pin,Tx_MODE);
-	sendData(AX_START);                     
-	sendData(AX_START);
-	sendData(ID);
-	sendData(AX_RESET_LENGTH);
-	sendData(AX_RESET);    
-	sendData(Checksum);
-	delayMicroseconds(TX_DELAY_TIME);
-	digitalWrite(Direction_Pin,Rx_MODE);
-
-    return read_error();  
-}
-
-unsigned char DynamixelSerial::ping(unsigned char ID)
-{
-	unsigned char Checksum; 
-
-	Checksum = (~(ID + AX_PING_LENGTH + AX_PING))&0xFF;
-	
-	digitalWrite(Direction_Pin,Tx_MODE);
-	sendData(AX_START);                     
-	sendData(AX_START);
-	sendData(ID);
-	sendData(AX_PING_LENGTH);
-	sendData(AX_PING);    
-	sendData(Checksum);
-	delayMicroseconds(TX_DELAY_TIME);
-	digitalWrite(Direction_Pin,Rx_MODE);
-    
-    return read_error();              
 }
 
 unsigned char DynamixelSerial::move(unsigned char ID, int Position)

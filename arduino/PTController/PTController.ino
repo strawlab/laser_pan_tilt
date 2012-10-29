@@ -24,6 +24,7 @@ class DynamixelSerialPTC : public DynamixelSerial {
 DynamixelSerialPTC  pantilt;
 EthernetServer      server(PTC_TCP_PORT);
 uint8_t             pantilt_wait;
+uint8_t             init_ok;
 
 void setup() {
   pinMode(PTC_LED_STATUS, OUTPUT);
@@ -38,8 +39,26 @@ void setup() {
 #endif
   
   pantilt.begin(PTC_COMM_DIR_PIN);
-
   pantilt_wait = 0;
+
+  //wait for both servos to be detected (?_ok = 0x00 when everythin is OK)
+  uint8_t tries = 50;
+  uint8_t p_ok = 0xFF;
+  uint8_t t_ok = 0xFF;
+  digitalWrite(PTC_LED_STATUS, LOW);
+
+  while ( (p_ok = pantilt.ping(PTC_SERVO_ID_PAN) != 0x00) && --tries )  {
+    digitalWrite(PTC_LED_STATUS, digitalRead(PTC_LED_STATUS) ? LOW : HIGH);
+    delay(100);
+  }
+  while ( (t_ok = pantilt.ping(PTC_SERVO_ID_TILT) != 0x00) && --tries )  {
+    digitalWrite(PTC_LED_STATUS, digitalRead(PTC_LED_STATUS) ? LOW : HIGH);
+    delay(100);
+  }
+
+  init_ok = (t_ok == 0x00) && (p_ok == 0x00);
+  digitalWrite(PTC_LED_STATUS, init_ok);
+
 }
 
 uint8_t ethernet_parse(EthernetClient &client)
@@ -148,6 +167,9 @@ void loop() {
           break;
         case 'v':
           cmdok = pantilt.getVoltage(PTC_SERVO_ID_PAN, cmdresp);
+          break;
+        case 'p':
+          cmdok = pantilt.ping(val);
           break;
         default:
           cmdok = 0;

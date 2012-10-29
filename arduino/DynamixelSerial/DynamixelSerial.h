@@ -70,6 +70,9 @@
 #define AX_SYNC_WRITE               131
 
 	// Specials ///////////////////////////////////////////////////////////////
+#define AX_INSTRUCTION_0_PARAMS_LENGTH  2
+
+
 #define OFF                         0
 #define ON                          1
 #define LEFT						0
@@ -120,28 +123,28 @@ class DynamixelSerial {
 private:
 	unsigned char Direction_Pin;
 	unsigned char read_response(uint8_t *buf, unsigned char N);
-	unsigned char read_response(uint8_t &resp);
-	unsigned char read_response(uint16_t &resp);
+	unsigned char read_response(uint8_t &resp) { read_response(&resp, 1); }
 	unsigned char read_error(void) { read_response(NULL, 0); }
 
-	unsigned char read_register_byte(uint8_t ID, uint8_t address, uint8_t &resp);
+	unsigned char instruction_read_byte(uint8_t ID, uint8_t address, uint8_t &resp);
+    unsigned char instruction_no_params(uint8_t ID, uint8_t cmd);
 public:
 	
-	void begin(unsigned char directionPin);
-	void end(void);
-
-	unsigned char reset(unsigned char ID);
-	unsigned char ping(unsigned char ID); 
-	
+	void          begin(unsigned char directionPin);
+	void          end(void);
 	unsigned char move(unsigned char ID, int Position);
 	unsigned char move(unsigned char ID, int Position, int Speed);
 
+	unsigned char reset(unsigned char ID) {
+                    return instruction_no_params(ID, AX_RESET); }
+	unsigned char ping(unsigned char ID) {
+                    return instruction_no_params(ID, AX_PING); }
     unsigned char getTemperature(unsigned char ID, uint8_t &val) { 
-                    return read_register_byte(ID, AX_PRESENT_TEMPERATURE, val); }
+                    return instruction_read_byte(ID, AX_PRESENT_TEMPERATURE, val); }
     unsigned char getVoltage(unsigned char ID, uint8_t &val) { 
-                    return read_register_byte(ID, AX_PRESENT_VOLTAGE, val); }
+                    return instruction_read_byte(ID, AX_PRESENT_VOLTAGE, val); }
     unsigned char isMoving(unsigned char ID, uint8_t &val) {
-                    return read_register_byte(ID, AX_MOVING, val); }
+                    return instruction_read_byte(ID, AX_MOVING, val); }
 
 protected:
 
