@@ -6,8 +6,7 @@
 
 #include "DynamixelSerial.h"
 
-#define TIME_OUT                    10
-#define TX_DELAY_TIME				700
+#define TX_DELAY_TIME				600
 #define Tx_MODE                     1
 #define Rx_MODE                     0
 
