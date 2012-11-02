@@ -336,10 +336,12 @@ UsedLibrary="/opt/eagle/eagle-6.2.0/lbr/xilinx-xc9.lbr"
 UsedLibrary="/opt/eagle/eagle-6.2.0/lbr/xilinx-xcv.lbr"
 UsedLibrary="/opt/eagle/eagle-6.2.0/lbr/zetex.lbr"
 UsedLibrary="/opt/eagle/eagle-6.2.0/lbr/zilog.lbr"
+UsedLibrary="parts.lbr"
+UsedLibrary="SmartPrj.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="869 418 1468 817"
+Loc="0 27 599 426"
 State=2
 Number=0
 
