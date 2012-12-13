@@ -15157,7 +15157,10 @@ DIN A3, landscape with location and doc. field</description>
 <part name="GND29" library="supply1" deviceset="GND" device=""/>
 <part name="R6" library="SmartPrj" deviceset="R-EU_" device="0603-RND" value="N.M."/>
 <part name="GND33" library="supply1" deviceset="GND" device=""/>
-<part name="IC1" library="SmartPrj" deviceset="STM812" device="" value="CAT811TTBI-CT3"/>
+<part name="IC1" library="SmartPrj" deviceset="STM812" device="" value="CAT811TTBI-CT3">
+<attribute name="MPN" value="STM812LW16F"/>
+<attribute name="OC_FARNELL" value="8690545"/>
+</part>
 <part name="GND34" library="supply1" deviceset="GND" device=""/>
 <part name="P+7" library="supply1" deviceset="+5V" device=""/>
 <part name="R9" library="SmartPrj" deviceset="R-EU_" device="R0603" value="10k"/>
@@ -15173,22 +15176,36 @@ DIN A3, landscape with location and doc. field</description>
 <part name="GND31" library="supply1" deviceset="GND" device=""/>
 <part name="+3V1" library="supply1" deviceset="+3V3" device=""/>
 <part name="GND42" library="supply1" deviceset="GND" device=""/>
-<part name="RN1" library="resistor-dil" deviceset="4R-N" device="CAY16" value="1k"/>
-<part name="RN3" library="resistor-dil" deviceset="4R-N" device="CAY16" value="1k"/>
+<part name="RN1" library="resistor-dil" deviceset="4R-N" device="CAY16" value="1k">
+<attribute name="MPN" value="CAY16-102J4LF"/>
+<attribute name="OC_FARNELL" value="1770133"/>
+</part>
+<part name="RN3" library="resistor-dil" deviceset="4R-N" device="CAY16" value="1k">
+<attribute name="MPN" value="CAY16-102J4LF"/>
+<attribute name="OC_FARNELL" value="1770133"/>
+</part>
 <part name="Q1" library="special" deviceset="XTAL/S" device="" value="25MHz"/>
 <part name="C6" library="SmartPrj" deviceset="C-EU" device="C0603" value="22p"/>
 <part name="C7" library="SmartPrj" deviceset="C-EU" device="C0603" value="22p"/>
-<part name="RN2" library="resistor-dil" deviceset="4R-N" device="CAY16" value="49R9"/>
+<part name="RN2" library="resistor-dil" deviceset="4R-N" device="CAY16" value="49R9">
+<attribute name="MPN" value="CAY16-49R9F4LF"/>
+<attribute name="OC_FARNELL" value="2113092"/>
+</part>
 <part name="U$1" library="SmartPrj" deviceset="POE-RJ45" device=""/>
 <part name="GND4" library="supply1" deviceset="GND" device=""/>
 <part name="+3V8" library="supply1" deviceset="+3V3" device=""/>
-<part name="IC11" library="74xx-little-de" deviceset="74*1G14" device="DBV" technology="LVC"/>
+<part name="IC11" library="74xx-little-de" deviceset="74*1G14" device="DBV" technology="LVC">
+<attribute name="MPN" value="SN74LVC1G14DBVT"/>
+<attribute name="OC_FARNELL" value="1236328"/>
+</part>
 <part name="R7" library="SmartPrj" deviceset="R-EU_" device="0603-RND" value="N.M."/>
 <part name="GND14" library="supply1" deviceset="GND" device=""/>
 <part name="GND26" library="supply1" deviceset="GND" device=""/>
 <part name="C16" library="SmartPrj" deviceset="C-EU" device="C0603" value="1u"/>
 <part name="GND38" library="supply1" deviceset="GND" device=""/>
-<part name="IC2" library="linear" deviceset="MC33269ST*" device="" technology="-3.3T3" value="MC33269ST-3"/>
+<part name="IC2" library="linear" deviceset="MC33269ST*" device="" technology="-3.3T3" value="MC33269ST-3">
+<attribute name="OC_FARNELL" value="1652295"/>
+</part>
 <part name="IC3" library="linear" deviceset="MC33269?*" device="D" technology="-3.3" value="MC33269D-3"/>
 <part name="GND10" library="supply1" deviceset="GND" device=""/>
 <part name="GND35" library="supply1" deviceset="GND" device=""/>
@@ -15242,6 +15259,7 @@ DIN A3, landscape with location and doc. field</description>
 <text x="335.28" y="60.96" size="3.81" layer="94">tbd</text>
 <text x="193.04" y="-30.48" size="1.778" layer="91">PoE Module = PEM1312 (Farnell 1902525)</text>
 <text x="193.04" y="-33.02" size="1.778" layer="91">Ethernet Jack = TE 1-6605310-1 (Farnell 1630004)</text>
+<text x="193.04" y="-35.56" size="1.778" layer="91">Long SIL, Arduino, Connectors = TSW-108-{07,14,15,17}-T-S (Farnell 2038069)</text>
 </plain>
 <instances>
 <instance part="ICSP" gate="A" x="154.94" y="129.54"/>
@@ -15351,7 +15369,10 @@ DIN A3, landscape with location and doc. field</description>
 <attribute name="VALUE" x="372.11" y="48.768" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="GND33" gate="1" x="320.04" y="66.04" rot="MR90"/>
-<instance part="IC1" gate="G$1" x="220.98" y="132.08" rot="MR0"/>
+<instance part="IC1" gate="G$1" x="220.98" y="132.08" rot="MR0">
+<attribute name="OC_FARNELL" x="220.98" y="132.08" size="1.778" layer="96" rot="MR0" display="off"/>
+<attribute name="MPN" x="220.98" y="132.08" size="1.778" layer="96" rot="MR0" display="off"/>
+</instance>
 <instance part="GND34" gate="1" x="231.14" y="132.08" rot="R90"/>
 <instance part="P+7" gate="1" x="198.12" y="142.24" smashed="yes">
 <attribute name="VALUE" x="200.025" y="144.78" size="1.778" layer="96" rot="R180"/>
@@ -15395,11 +15416,16 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="GND42" gate="1" x="281.94" y="-7.62"/>
 <instance part="RN1" gate="A" x="195.58" y="114.3"/>
 <instance part="RN1" gate="B" x="157.48" y="35.56" rot="R180"/>
-<instance part="RN1" gate="C" x="157.48" y="43.18" rot="R180"/>
+<instance part="RN1" gate="C" x="157.48" y="43.18" rot="R180">
+<attribute name="MPN" x="157.48" y="43.18" size="1.778" layer="96" rot="R180" display="off"/>
+<attribute name="OC_FARNELL" x="157.48" y="43.18" size="1.778" layer="96" rot="R180" display="off"/>
+</instance>
 <instance part="RN1" gate="D" x="180.34" y="10.16" rot="R270"/>
 <instance part="RN3" gate="A" x="48.26" y="144.78" smashed="yes" rot="R180">
 <attribute name="NAME" x="43.18" y="141.732" size="1.778" layer="95"/>
 <attribute name="VALUE" x="50.8" y="141.732" size="1.778" layer="96"/>
+<attribute name="MPN" x="48.26" y="144.78" size="1.778" layer="96" rot="R180" display="off"/>
+<attribute name="OC_FARNELL" x="48.26" y="144.78" size="1.778" layer="96" rot="R180" display="off"/>
 </instance>
 <instance part="RN3" gate="B" x="157.48" y="12.7" rot="R180"/>
 <instance part="RN3" gate="C" x="157.48" y="5.08" smashed="yes" rot="R180">
@@ -15414,7 +15440,10 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="C6" gate="G$1" x="187.96" y="66.04" rot="R90"/>
 <instance part="C7" gate="G$1" x="187.96" y="40.64" rot="R90"/>
 <instance part="RN2" gate="A" x="99.06" y="167.64"/>
-<instance part="RN2" gate="B" x="86.36" y="167.64" rot="R180"/>
+<instance part="RN2" gate="B" x="86.36" y="167.64" rot="R180">
+<attribute name="MPN" x="86.36" y="167.64" size="1.778" layer="96" rot="R180" display="off"/>
+<attribute name="OC_FARNELL" x="86.36" y="167.64" size="1.778" layer="96" rot="R180" display="off"/>
+</instance>
 <instance part="RN2" gate="C" x="127" y="175.26"/>
 <instance part="RN2" gate="D" x="114.3" y="175.26" rot="R180"/>
 <instance part="U$1" gate="G$1" x="15.24" y="149.86"/>
@@ -15422,7 +15451,10 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="+3V8" gate="G$1" x="58.42" y="149.86" smashed="yes">
 <attribute name="VALUE" x="60.96" y="152.4" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="IC11" gate="A" x="27.94" y="-33.02"/>
+<instance part="IC11" gate="A" x="27.94" y="-33.02">
+<attribute name="MPN" x="27.94" y="-33.02" size="1.778" layer="96" display="off"/>
+<attribute name="OC_FARNELL" x="27.94" y="-33.02" size="1.778" layer="96" display="off"/>
+</instance>
 <instance part="IC11" gate="P" x="12.7" y="-17.78"/>
 <instance part="R7" gate="G$1" x="312.42" y="40.64" smashed="yes" rot="R270">
 <attribute name="NAME" x="316.23" y="34.5186" size="1.778" layer="95" rot="R90"/>
@@ -15432,7 +15464,9 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="GND26" gate="1" x="292.1" y="-7.62"/>
 <instance part="C16" gate="G$1" x="292.1" y="7.62"/>
 <instance part="GND38" gate="1" x="180.34" y="-10.16"/>
-<instance part="IC2" gate="G$1" x="335.28" y="7.62"/>
+<instance part="IC2" gate="G$1" x="335.28" y="7.62">
+<attribute name="OC_FARNELL" x="335.28" y="7.62" size="1.778" layer="96" display="off"/>
+</instance>
 <instance part="IC3" gate="G$1" x="335.28" y="-10.16"/>
 <instance part="GND10" gate="1" x="335.28" y="0"/>
 <instance part="GND35" gate="1" x="335.28" y="-17.78"/>
