@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.2">
+<eagle version="6.4">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -15241,10 +15241,10 @@ DIN A3, landscape with location and doc. field</description>
 <part name="FRAME1" library="frames" deviceset="A3L-LOC" device=""/>
 <part name="SRV" library="led" deviceset="LED" device="CHIPLED_0805" value="Green"/>
 <part name="NET" library="led" deviceset="LED" device="CHIPLED_0805" value="Green"/>
-<part name="R11" library="SmartPrj" deviceset="R-EU_" device="R0603" value="1k"/>
-<part name="R12" library="SmartPrj" deviceset="R-EU_" device="R0603" value="1k"/>
-<part name="R14" library="SmartPrj" deviceset="R-EU_" device="R0603" value="1k"/>
-<part name="R15" library="SmartPrj" deviceset="R-EU_" device="R0603" value="1k"/>
+<part name="R11" library="SmartPrj" deviceset="R-EU_" device="R0603" value="68R"/>
+<part name="R12" library="SmartPrj" deviceset="R-EU_" device="R0603" value="68R"/>
+<part name="R14" library="SmartPrj" deviceset="R-EU_" device="R0603" value="68R"/>
+<part name="R15" library="SmartPrj" deviceset="R-EU_" device="R0603" value="68R"/>
 <part name="GND30" library="supply1" deviceset="GND" device=""/>
 <part name="GND36" library="supply1" deviceset="GND" device=""/>
 </parts>
@@ -15260,6 +15260,9 @@ DIN A3, landscape with location and doc. field</description>
 <text x="193.04" y="-30.48" size="1.778" layer="91">PoE Module = PEM1312 (Farnell 1902525)</text>
 <text x="193.04" y="-33.02" size="1.778" layer="91">Ethernet Jack = TE 1-6605310-1 (Farnell 1630004)</text>
 <text x="193.04" y="-35.56" size="1.778" layer="91">Long SIL, Arduino, Connectors = TSW-108-{07,14,15,17}-T-S (Farnell 2038069)</text>
+<text x="127" y="-35.56" size="1.778" layer="91">TODO:
+* change 1k rarray to 68R
+* add newly ordered part numbers</text>
 </plain>
 <instances>
 <instance part="ICSP" gate="A" x="154.94" y="129.54"/>
@@ -16894,4 +16897,10 @@ DIN A3, landscape with location and doc. field</description>
 </sheets>
 </schematic>
 </drawing>
+<compatibility>
+<note version="6.3" minversion="6.2.2" severity="warning">
+Since Version 6.2.2 text objects can contain more than one line,
+which will not be processed correctly with this version.
+</note>
+</compatibility>
 </eagle>
