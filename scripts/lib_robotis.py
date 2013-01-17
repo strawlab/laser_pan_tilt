@@ -141,6 +141,9 @@ class Robotis_Servo():
         else:
             self.dyn = USB2Dynamixel
 
+        self.return_delay = 0.0005
+        self._last_t = time.time()
+
         # ID exists on bus?
         self.servo_id = servo_id
         try:
@@ -189,6 +192,13 @@ class Robotis_Servo():
         '''
         data = self.read_address( 0x2e, 1 )
         return data[0] != 0
+
+    def read_model_number(self):
+        ''' returns model number
+        '''
+        data = self.read_address( 0x00, 2 )
+        val = data[0] + data[1] * 256
+        return val
 
     def read_voltage(self):
         ''' returns voltage (Volts)
@@ -333,6 +343,12 @@ class Robotis_Servo():
         raise RuntimeError('lib_robotis: An error occurred: %d\n' % err)
 
     def receive_reply(self):
+        t = time.time()
+        dt = t - self._last_t
+        if dt < self.return_delay:
+            time.sleep(self.return_delay - dt)
+        self._last_t = t
+
         start = self.dyn.read_serial( 2 )
         if start != '\xff\xff':
             raise RuntimeError('lib_robotis: Failed to receive start bytes\n')
@@ -360,16 +376,19 @@ class Robotis_Servo():
 
 def find_servos(dyn):
     ''' Finds all servo IDs on the USB2Dynamixel '''
-    print 'Scanning for Servos.'
+    print 'Scanning for servos'
     servos = []
     dyn.servo_dev.setTimeout( 0.03 ) # To make the scan faster
-    for i in xrange(254):
+    for i in range(254):
+        sys.stdout.write('.')
         try:
             s = Robotis_Servo( dyn, i )
-            print '\n FOUND A SERVO @ ID %d\n' % i
+            sys.stdout.write('\nFOUND SERVO @ ID %d (model # %i)\n' % (i, s.read_model_number()))
             servos.append( i )
         except:
             pass
+        sys.stdout.flush()
+    print '\nFinished (%i servos found)' % len(servos)
     dyn.servo_dev.setTimeout( 1.0 ) # Restore to original
     return servos
 
@@ -427,7 +446,7 @@ if __name__ == '__main__':
                  help='Baudrate for USB2Dynamixel connection [default = 57600]', default=57600)
     p.add_argument('--write-id', type=int,
                  help='change id of servo')
-    p.add_argument('--series', choices=('MX','RX'), required=True,
+    p.add_argument('--series', choices=('MX','RX'), default=None,
                  help='Series of the servo')
     p.add_argument('--debug', action='store_true', default=False,
                  help='Debug communications')
@@ -439,6 +458,10 @@ if __name__ == '__main__':
 
     if opt.scan:
         find_servos( dyn )
+        sys.exit(0)
+
+    if not opt.series:
+        p.error('Series must be specified')
 
     if opt.recover:
         recover_servo( dyn )
