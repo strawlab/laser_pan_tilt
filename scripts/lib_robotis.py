@@ -34,7 +34,8 @@
 import serial
 import time
 import thread
-import sys, optparse
+import sys
+import argparse
 import math
 
 class USB2Dynamixel_Device():
@@ -98,7 +99,7 @@ class USB2Dynamixel_Device():
 class Robotis_Servo():
     ''' Class to use a robotis RX-28 or RX-64 servo.
     '''
-    def __init__(self, USB2Dynamixel, servo_id, series = None ):
+    def __init__(self, USB2Dynamixel, servo_id, series = 'MX' ):
         ''' USB2Dynamixel - USB2Dynamixel_Device object to handle serial port.
                             Handles threadsafe operation for multiple servos
             servo_id - servo ids connected to USB2Dynamixel 1,2,3,4 ... (1 to 253)
@@ -120,7 +121,7 @@ class Robotis_Servo():
                 'flipped': False,
                 'max_speed': math.radians(100)
                 }
-        else: # Common settings for RX-series.  Can overload in servo_config.py
+        elif series == 'RX': # Common settings for RX-series.  Can overload in servo_config.py
             defaults = {
                 'home_encoder': 0x200,
                 'max_encoder': 0x3FF,  # Assumes 0 is min.
@@ -130,6 +131,8 @@ class Robotis_Servo():
                 'flipped': False,
                 'max_speed': math.radians(100)
                 }
+        else:
+            raise RuntimeError('Unknown series %s' % series)
                 
 
         # Error Checking
@@ -155,11 +158,12 @@ class Robotis_Servo():
         try:
             import servo_config as sc
             if sc.servo_param.has_key( self.servo_id ):
+                print 'Warning: Updating defaults from servo_config.py.'
                 self.settings = sc.servo_param[ self.servo_id ]
             else:
                 print 'Warning: servo_id ', self.servo_id, ' not found in servo_config.py.  Using defaults.'
         except:
-            print 'Warning: servo_config.py not found.  Using defaults.'
+            pass
 
         # Set to default any parameter not specified in servo_config
         for key in defaults.keys():
@@ -406,32 +410,32 @@ def recover_servo(dyn):
 
 
 if __name__ == '__main__':
-    p = optparse.OptionParser()
-    p.add_option('-d', action='store', type='string', dest='dev_name',
-                 help='Required: Device string for USB2Dynamixel. [i.e. /dev/ttyUSB0 for Linux, \'0\' (for COM1) on Windows]')
-    p.add_option('--scan', action='store_true', dest='scan', default=False,
+    p = argparse.ArgumentParser()
+    p.add_argument('--device', required=True,
+                 help='Device string for USB2Dynamixel. [i.e. /dev/ttyUSB0 for Linux, \'0\' (for COM1) on Windows]')
+    p.add_argument('--scan', action='store_true', default=False,
                  help='Scan the device for servo IDs attached.')
-    p.add_option('--recover', action='store_true', dest='recover', default=False,
+    p.add_argument('--recover', action='store_true', default=False,
                  help='Recover from a bricked servo (restores to factory defaults).')
-    p.add_option('--ang', action='store', type='float', dest='ang',
+    p.add_argument('--ang', type=float,
                  help='Angle to move the servo to (degrees).')
-    p.add_option('--ang_vel', action='store', type='float', dest='ang_vel',
-                 help='angular velocity. (degrees/sec) [default = 50]', default=50)
-    p.add_option('--id', action='store', type='int', dest='id',
+    p.add_argument('--ang-vel', type=float,
+                 help='Angular velocity. (degrees/sec) [default = 50]', default=50)
+    p.add_argument('--id', type=int,
                  help='id of servo to connect to, [default = 1]', default=1)
-    p.add_option('--baud', action='store', type='int', dest='baud',
-                 help='baudrate for USB2Dynamixel connection [default = 57600]', default=57600)
-    p.add_option('--write-id', action='store', type='int', dest='write_id',
+    p.add_argument('--baud', action='store', type=int,
+                 help='Baudrate for USB2Dynamixel connection [default = 57600]', default=57600)
+    p.add_argument('--write-id', type=int,
                  help='change id of servo')
+    p.add_argument('--series', choices=('MX','RX'), required=True,
+                 help='Series of the servo')
+    p.add_argument('--debug', action='store_true', default=False,
+                 help='Debug communications')
 
 
-    opt, args = p.parse_args()
+    opt = p.parse_args()
 
-    if opt.dev_name == None:
-        p.print_help()
-        sys.exit(0)
-
-    dyn = USB2Dynamixel_Device(opt.dev_name, opt.baud)
+    dyn = USB2Dynamixel_Device(opt.device, opt.baud, opt.debug)
 
     if opt.scan:
         find_servos( dyn )
@@ -440,11 +444,11 @@ if __name__ == '__main__':
         recover_servo( dyn )
 
     if opt.ang != None:
-        servo = Robotis_Servo( dyn, opt.id )
+        servo = Robotis_Servo( dyn, opt.id, opt.series )
         servo.move_angle( math.radians(opt.ang), math.radians(opt.ang_vel) )
 
     if opt.write_id != None:
-        servo = Robotis_Servo( dyn, opt.id )
+        servo = Robotis_Servo( dyn, opt.id, opt.series )
         ok = servo.write_id(opt.write_id)
         print "Changed ID of servo from %d to %d" % (opt.id, opt.write_id)
 
