@@ -6,22 +6,12 @@
 
 #include "PTCConfig.h"
 
-class DynamixelSerialPTC : public DynamixelSerial {
-  void sendData(unsigned char d) {
-    Serial1.write(d);
 #if PTC_DEBUG_DYNAMIXEL
-    Serial.write(d);
+  DynamixelSerial  pantilt(Serial1, Serial);
+#else
+  DynamixelSerial  pantilt(Serial1);
 #endif
-    Serial1.flush();
-  }
-  int availableData(void) {return Serial1.available();}
-  int readData(void)      {return Serial1.read();}
-  int peekData(void)      {return Serial1.peek();}
-  void beginCom(void)     {Serial1.begin(PTC_SERVO_BAUD);}
-  void endCom(void)       {Serial1.end();}
-};
 
-DynamixelSerialPTC  pantilt;
 EthernetServer      server(PTC_TCP_PORT);
 uint8_t             pantilt_wait;
 uint8_t             init_ok;
@@ -38,7 +28,7 @@ void setup() {
   Serial.begin(PTC_DEBUG_SERIAL_BAUD);
 #endif
   
-  pantilt.begin(PTC_COMM_DIR_PIN);
+  pantilt.begin(PTC_COMM_DIR_PIN, PTC_SERVO_BAUD);
   pantilt_wait = 0;
 
   //wait for both servos to be detected (?_ok = 0x00 when everythin is OK)

@@ -1,6 +1,12 @@
 #ifndef DynamixelSerial1_h
 #define DynamixelSerial1_h
 
+#if defined(ARDUINO) && ARDUINO >= 100  // Arduino IDE Version
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
 	// EEPROM AREA  ///////////////////////////////////////////////////////////
 #define AX_MODEL_NUMBER_L           0
 #define AX_MODEL_NUMBER_H           1
@@ -121,20 +127,30 @@
 
 class DynamixelSerial {
 private:
+    HardwareSerial &_ser;
+    HardwareSerial *_debug;
 	unsigned char Direction_Pin;
+
 	unsigned char read_response(uint8_t *buf, unsigned char N);
 	unsigned char read_response(uint8_t &resp) { read_response(&resp, 1); }
 	unsigned char read_error(void) { read_response(NULL, 0); }
-
 	unsigned char instruction_read_byte(uint8_t ID, uint8_t address, uint8_t &resp);
     unsigned char instruction_no_params(uint8_t ID, uint8_t cmd);
+
+    void sendData(unsigned char);
+    int availableData(void) { return _ser.available(); }
+    int readData(void)      { return _ser.read(); }
+    int peekData(void)      { return _ser.peek(); }
+
 public:
+    DynamixelSerial(HardwareSerial &ser) : _ser(ser), _debug(NULL) {}
+    DynamixelSerial(HardwareSerial &ser, HardwareSerial &debug) : _ser(ser), _debug(&debug) {}
 	
-	void          begin(unsigned char directionPin);
-	void          end(void);
+	void          begin(unsigned char directionPin, unsigned long baud);
+	void          end(void) { _ser.end(); }
+
 	unsigned char move(unsigned char ID, int Position);
 	unsigned char move(unsigned char ID, int Position, int Speed);
-
 	unsigned char reset(unsigned char ID) {
                     return instruction_no_params(ID, AX_RESET); }
 	unsigned char ping(unsigned char ID) {
@@ -145,15 +161,6 @@ public:
                     return instruction_read_byte(ID, AX_PRESENT_VOLTAGE, val); }
     unsigned char isMoving(unsigned char ID, uint8_t &val) {
                     return instruction_read_byte(ID, AX_MOVING, val); }
-
-protected:
-
-    virtual void sendData(unsigned char) = 0;
-    virtual int availableData(void) = 0;
-    virtual int readData(void) = 0;
-    virtual int peekData(void) = 0;
-    virtual void beginCom(void) = 0;
-    virtual void endCom(void) = 0;
 
 };
 

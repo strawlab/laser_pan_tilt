@@ -1,9 +1,3 @@
-#if defined(ARDUINO) && ARDUINO >= 100  // Arduino IDE Version
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #include "DynamixelSerial.h"
 
 #define TX_DELAY_TIME				600
@@ -81,16 +75,19 @@ unsigned char DynamixelSerial::instruction_no_params(uint8_t ID, uint8_t cmd)
     return read_error();
 }
 
-void DynamixelSerial::begin(unsigned char directionPin)
+void DynamixelSerial::begin(unsigned char directionPin, unsigned long baud)
 {	
 	Direction_Pin = directionPin;
     pinMode(Direction_Pin,OUTPUT);
-	beginCom();
+    _ser.begin(baud);
 }	
 
-void DynamixelSerial::end()
+void DynamixelSerial::sendData(unsigned char d)
 {
-	endCom();
+    _ser.write(d);
+    _ser.flush();
+    if (_debug)
+        _debug->write(d);
 }
 
 unsigned char DynamixelSerial::move(unsigned char ID, int Position)
