@@ -137,10 +137,10 @@ class PTController(object):
 if __name__ == "__main__":
     import random, time
 
-    p = PTController(debug=True, check_response=True)
+    p = PTController(debug=True, check_response=False)
     p.wait_for_movement(True)
     while 1:
-        p.pan(deg=random.randint(-30,30))
+        p.pan(deg=random.randint(-80,80))
         p.tilt(deg=random.randint(-30,30))
         #p.laser = False
         #p.status_led = False
