@@ -6,7 +6,7 @@ ARDUINO_DIR   = /usr/share/arduino
 ARDMK_DIR     = arduino-mk/
 AVR_TOOLS_DIR = /usr
 
-BOARD_TAG    = mega2560
+BOARD_TAG    = leonardo
 ARDUINO_PORT = /dev/ttyACM*
 ARDUINO_LIBS = SPI Ethernet Ethernet/utility DynamixelSerial
 include arduino-mk/Arduino.mk

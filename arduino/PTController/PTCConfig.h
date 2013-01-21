@@ -8,9 +8,16 @@
 
 #define PTC_DEBUG_SERIAL_BAUD   57600
 
-#define PTC_LED_STATUS          8
-#define PTC_LED_COMMAND         7
-#define PTC_COMM_DIR_PIN        2
+#define PTC_PIN_LED_STATUS      8   //A1 (not used in v1)
+#define PTC_PIN_LED_COMMAND     7   //A5 (in v1)
+
+#define PTC_PIN_LED_LASER       A4
+#define PTC_PIN_LED_NET_OK      A2
+#define PTC_PIN_LED_SRV_OK      A3
+
+#define PTC_PIN_CAMERA_TRIG     3   //(not used in v0)
+#define PTC_PIN_COMM_DIRECTION  2
+#define PTC_PIN_LASER           9
 
 #define PTC_RXBUF_START         '@'
 #define PTC_RXBUF_START_IDX     0
@@ -30,7 +37,5 @@ IPAddress ptc_ip(192,168,1,60);
 #define PTC_SERVO_ID_TILT       2
 #define PTC_SERVO_ID_PAN        1
 #define PTC_SERVO_BAUD          57600
-
-#define PTC_PIN_LASER           9
 
 #endif /* _PTC_CONFIG_H */
