@@ -31,8 +31,8 @@ void setup() {
 
   Ethernet.begin(ptc_mac, ptc_ip);
   //the dhcp version of this function returns if a lease was acquired, the
-  //static IP version returns nothing... yay
-  digitalWrite(PTC_PIN_LED_NET_OK, HIGH);
+  //static IP version returns nothing... yay. Do it when we have a connection
+  //instead
   server.begin();
 
   pantilt.begin(PTC_PIN_COMM_DIRECTION, PTC_SERVO_BAUD);
@@ -127,10 +127,15 @@ void wait_until_not_moving(uint8_t ID)
 }
 
 void loop() {
+  static uint8_t first = 1;
   uint8_t rxok = 0;
 
   EthernetClient client = server.available();
   if (client) {
+    if (first) {
+      digitalWrite(PTC_PIN_LED_NET_OK, HIGH);
+      first = 0;
+    }
     rxok = ethernet_parse(client);
   }
 
