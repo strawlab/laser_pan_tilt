@@ -26,7 +26,7 @@ class PTController(object):
     MIN_PAN = math.radians(-180)
     MAX_PAN = math.radians(180)
 
-    def __init__(self, ip='192.168.1.60', debug=True, check_response=True):
+    def __init__(self, ip='192.168.1.60', debug=True, check_response=True, error_response=False):
         self._ip = ip
         self._struct = struct.Struct('<ccBHc')
         self._init_sock()
@@ -36,11 +36,16 @@ class PTController(object):
         self._status_led = False
         self._debug_enable = debug
         self._check_response = check_response
+        self._error_response = error_response
         
-    def _debug(self, msg, send):
+    def _debug(self, msg, send, extra=''):
         if self._debug_enable:
             print "-->" if send else "<--",
-            print " ".join(["{:02X}".format(ord(c)) for c in msg])
+            print " ".join(["{:02X}".format(ord(c)) for c in msg]),
+            if extra:
+                print extra
+            else:
+                print ''
 
     def _init_sock(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,9 +65,15 @@ class PTController(object):
 
             if self._check_response:
                 if cmdok == 0xFF:
-                    raise CommunicationError("command: %s" % cmd)
+                    if self._error_response:
+                        raise CommunicationError("command: %s" % cmd)
+                    else:
+                        self._debug([], False, '(COMMUNICATION ERROR)')
                 elif cmdok != 0x00:
-                    raise ServoError("command: %s error: %x" % (cmd,cmdok))
+                    if self._error_response:
+                        raise ServoError("command: %s error: %x" % (cmd,cmdok))
+                    else:
+                        self._debug([], False, '(SERVO EERROR)')
                 
             return cmdresp
 
@@ -143,7 +154,7 @@ if __name__ == "__main__":
     except NameError:
         inside_ipy = False
 
-    ptc = PTController(debug=True, check_response=False)
+    ptc = PTController(debug=True, check_response=True)
     ptc.wait_for_movement(True)
     while not inside_ipy:
         ptc.pan(deg=random.randint(-80,80))
