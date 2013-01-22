@@ -30,11 +30,7 @@
   #define PTC_PIN_CAMERA_TRIG     4
   #define PTC_PIN_LED_NET_OK      A2
   #define PTC_PIN_LED_LASER       A4
-#else
-  #error unknown hardware version
 #endif
-
-
 
 #define PTC_RXBUF_START         '@'
 #define PTC_RXBUF_START_IDX     0
