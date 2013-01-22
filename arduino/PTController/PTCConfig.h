@@ -3,21 +3,38 @@
 
 #include <Ethernet.h>
 
+#if !defined(HW_VER)
+#error define hardware version
+#endif
+
 #define PTC_DEBUG               1
 #define PTC_DEBUG_DYNAMIXEL     0
 
 #define PTC_DEBUG_SERIAL_BAUD   57600
 
-#define PTC_PIN_LED_STATUS      8   //A1 (not used in v1)
-#define PTC_PIN_LED_COMMAND     7   //A5 (in v1)
+#if HW_VER == 0
+  #define PTC_PIN_LED_SRV_OK      8
+  #define PTC_PIN_COMM_DIRECTION  2
+  #define PTC_PIN_LED_COMMAND     7
+  #define PTC_PIN_LASER           9
+  //the following are not used / not connected
+  #define PTC_PIN_CAMERA_TRIG     4
+  #define PTC_PIN_LED_NET_OK      A2
+  #define PTC_PIN_LED_LASER       A4
+#elif HW_VER == 1
+  #define PTC_PIN_LED_SRV_OK      A3
+  #define PTC_PIN_COMM_DIRECTION  3
+  #define PTC_PIN_LED_COMMAND     A5
+  #define PTC_PIN_LASER           5
+  //
+  #define PTC_PIN_CAMERA_TRIG     4
+  #define PTC_PIN_LED_NET_OK      A2
+  #define PTC_PIN_LED_LASER       A4
+#else
+  #error unknown hardware version
+#endif
 
-#define PTC_PIN_LED_LASER       A4
-#define PTC_PIN_LED_NET_OK      A2
-#define PTC_PIN_LED_SRV_OK      A3
 
-#define PTC_PIN_CAMERA_TRIG     3   //(not used in v0)
-#define PTC_PIN_COMM_DIRECTION  2
-#define PTC_PIN_LASER           9
 
 #define PTC_RXBUF_START         '@'
 #define PTC_RXBUF_START_IDX     0

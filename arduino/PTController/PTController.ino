@@ -4,6 +4,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
+#define   HW_VER 1
 #include "PTCConfig.h"
 
 #if PTC_DEBUG_DYNAMIXEL
@@ -17,7 +18,6 @@ uint8_t             pantilt_wait;
 uint8_t             init_ok;
 
 void setup() {
-  pinMode(PTC_PIN_LED_STATUS, OUTPUT);
   pinMode(PTC_PIN_LED_COMMAND, OUTPUT);
   pinMode(PTC_PIN_LASER, OUTPUT);
   pinMode(PTC_PIN_LED_LASER, OUTPUT);
@@ -26,6 +26,7 @@ void setup() {
 
 #if PTC_DEBUG_DYNAMIXEL || PTC_DEBUG
   Serial.begin(PTC_DEBUG_SERIAL_BAUD);
+  Serial.println("POWER");
 #endif
 
   Ethernet.begin(ptc_mac, ptc_ip);
@@ -38,24 +39,37 @@ void setup() {
   pantilt_wait = 0;
 
   //wait for both servos to be detected (?_ok = 0x00 when everythin is OK)
-  uint8_t tries = 50;
+  uint8_t tries;
   uint8_t p_ok = 0xFF;
   uint8_t t_ok = 0xFF;
-  digitalWrite(PTC_PIN_LED_STATUS, LOW);
+  digitalWrite(PTC_PIN_LED_SRV_OK, LOW);
 
+  tries = 25;
   while ( (p_ok = pantilt.ping(PTC_SERVO_ID_PAN) != 0x00) && --tries )  {
-    digitalWrite(PTC_PIN_LED_STATUS, digitalRead(PTC_PIN_LED_STATUS) ? LOW : HIGH);
+    digitalWrite(PTC_PIN_LED_SRV_OK, digitalRead(PTC_PIN_LED_SRV_OK) ? LOW : HIGH);
+    Serial.write('.');
     delay(100);
   }
+  Serial.write('\n');
+  tries = 25;
   while ( (t_ok = pantilt.ping(PTC_SERVO_ID_TILT) != 0x00) && --tries )  {
-    digitalWrite(PTC_PIN_LED_STATUS, digitalRead(PTC_PIN_LED_STATUS) ? LOW : HIGH);
+    digitalWrite(PTC_PIN_LED_SRV_OK, digitalRead(PTC_PIN_LED_SRV_OK) ? LOW : HIGH);
+    Serial.write('.');
     delay(100);
   }
+  Serial.write('\n');
 
   init_ok = (t_ok == 0x00) && (p_ok == 0x00);
-  digitalWrite(PTC_PIN_LED_STATUS, init_ok);
   digitalWrite(PTC_PIN_LED_SRV_OK, init_ok);
 
+#if PTC_DEBUG
+  Serial.print("Connected Servos: ");
+  Serial.print("P ");
+  Serial.print(p_ok == 0x00, HEX);
+  Serial.print(" T ");
+  Serial.print(t_ok == 0x00, HEX);
+  Serial.write('\n');
+#endif
 }
 
 uint8_t ethernet_parse(EthernetClient &client)
@@ -138,10 +152,10 @@ void loop() {
           pantilt_wait = 0;
           break;
         case 'S':
-          digitalWrite(PTC_PIN_LED_STATUS, HIGH);
+          //FIXME set servo LED
           break;
         case 's':
-          digitalWrite(PTC_PIN_LED_STATUS, LOW);
+          //FIXME set servo LED
           break;
         case 'L':
           digitalWrite(PTC_PIN_LASER, HIGH);
