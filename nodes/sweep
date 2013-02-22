@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+
+import argparse
+import time
+import yaml
+
+import progressbar
+
+import roslib;
+roslib.load_manifest('laser_pan_tilt')
+import rospy
+import laser_pan_tilt.srv
+
+class Scanner:
+
+    def __init__(self, pause, panstep, tiltstep, orient, laser="/laserpantilt", laser_range_pan=(-160,160,50), laser_range_tilt=(-55,20,8), laser_home=(0,0), laser_brightness=0.03):
+
+        self.orient = orient
+        self.pause = float(pause)
+        self.laser_range_pan = laser_range_pan
+        self.laser_range_tilt = laser_range_tilt
+        self.laser_home = laser_home
+
+        if panstep > 0:
+            self.laser_range_pan[2] = int(panstep)
+        if tiltstep > 0:
+            self.laser_range_tilt[2] = int(tiltstep)
+
+        self.laser_proxy_power = rospy.ServiceProxy(laser+'/set_power', laser_pan_tilt.srv.SetPower)
+        self.laser_proxy_pan = rospy.ServiceProxy(laser+'/set_pan', laser_pan_tilt.srv.SetFloat)
+        self.laser_proxy_tilt = rospy.ServiceProxy(laser+'/set_tilt', laser_pan_tilt.srv.SetFloat)
+        self.laser_proxy_brightness = rospy.ServiceProxy(laser+'/set_brightness', laser_pan_tilt.srv.SetFloat)
+
+        rospy.wait_for_service(laser+'/set_power')
+        rospy.wait_for_service(laser+'/set_brightness')
+        rospy.wait_for_service(laser+'/set_pan')
+        rospy.wait_for_service(laser+'/set_tilt')
+
+        #move laser home
+        self.laser_proxy_brightness(laser_brightness)
+        self.laser_proxy_power(False)
+        self.laser_proxy_pan(self.laser_home[0])
+        self.laser_proxy_tilt(self.laser_home[1])
+
+    def run(self):
+        def range_with_end(tup):
+            _min,_max,_step = tup
+            _range = range(_min,_max,_step)
+            _range[-1] = _max #ensure the endpoint
+            return _range
+
+        trange = range_with_end((self.laser_range_tilt[0],self.laser_range_tilt[1],self.laser_range_tilt[2]))
+        prange = range_with_end((self.laser_range_pan[0],self.laser_range_pan[1],self.laser_range_pan[2]))
+
+        widgets=[progressbar.Bar(), ' ', progressbar.ETA()]
+        pbar=progressbar.ProgressBar(widgets=widgets,maxval=len(trange)*len(prange)).start()
+
+        if self.orient:
+            #many close vertical lines
+            self.laser_proxy_power(True)
+            for i,p in enumerate((0,2,4,6,8)):
+                self.laser_proxy_pan(self.laser_home[0]+p)
+                if i % 2:
+                    titer = reversed(trange)
+                else:
+                    titer = trange
+                for t in titer:
+                    self.laser_proxy_tilt(t)
+                    rospy.sleep(self.pause)
+            self.laser_proxy_power(False)
+
+            #many horizontal lines
+            self.laser_proxy_pan(self.laser_home[0])
+            self.laser_proxy_tilt(self.laser_home[1])
+            rospy.sleep(2.0)
+            self.laser_proxy_power(True)
+            for i,t in enumerate((0,2,4,6,8)):
+                self.laser_proxy_tilt(self.laser_range_tilt[1]-t)
+                if i % 2:
+                    piter2 = range_with_end((-45,45,3))
+                else:
+                    piter2 = range_with_end((45,-45,-3))
+                for p in piter2:
+                    self.laser_proxy_pan(p)
+                    rospy.sleep(self.pause)
+            self.laser_proxy_power(False)
+
+        #grid
+        self.laser_proxy_tilt(self.laser_home[1])
+        self.laser_proxy_pan(prange[0])
+        rospy.sleep(2.0)
+        self.laser_proxy_power(True)
+        j = 0
+        for i,p in enumerate(prange):
+            self.laser_proxy_pan(p)
+            if i % 2:
+                titer = reversed(trange)
+            else:
+                titer = trange
+            for t in titer:
+                self.laser_proxy_tilt(t)
+                rospy.sleep(self.pause)
+
+                pbar.update(j)
+                j += 1
+
+        self.laser_proxy_power(False)
+        pbar.finish()
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--pause', type=float, default=0.7,
+        help='time to pause between points')
+    parser.add_argument(
+        '--pan-step', type=float, default=-1)
+    parser.add_argument(
+        '--tilt-step', type=float, default=-1)
+    parser.add_argument(
+        '--orient', action="store_true")
+
+    rospy.init_node("sweep")
+
+    argv = rospy.myargv()
+    args = parser.parse_args(argv[1:])
+
+    c = Scanner(args.pause, args.pan_step, args.tilt_step, args.orient)
+    c.run()
+

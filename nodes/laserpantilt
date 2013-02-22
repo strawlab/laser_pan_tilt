@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+# -*- Mode: python; tab-width: 4; indent-tabs-mode: nil; indent-offset: 4 -*-
+
+import roslib; roslib.load_manifest('flycave')
+import rospy
+
+import std_msgs
+import laser_pan_tilt.srv
+import ptc
+
+class ROSPanTilt:
+    def __init__(self, ip, brightness, home, debug, check_response, wait):
+        self.debug = debug
+        self._ptc = ptc.PTController(ip=ip, debug=debug, check_response=check_response)
+        self._ptc.wait_for_movement(wait)
+
+        s = rospy.Service('~set_pan', laser_pan_tilt.srv.SetFloat, self.handle_set_pan)
+        self._pub_pan = rospy.Publisher('~pan', std_msgs.msg.Float32, latch=True)
+        s = rospy.Service('~set_tilt', laser_pan_tilt.srv.SetFloat, self.handle_set_tilt)
+        self._pub_tilt = rospy.Publisher('~tilt', std_msgs.msg.Float32, latch=True)
+        s = rospy.Service('~set_brightness', laser_pan_tilt.srv.SetFloat, self.handle_set_brightness)
+        self._pub_brightness = rospy.Publisher('~brightness', std_msgs.msg.Float32, latch=True)
+        s = rospy.Service('~set_power', laser_pan_tilt.srv.SetPower, self.handle_set_power)
+        self._pub_power = rospy.Publisher('~power', std_msgs.msg.Bool, latch=True)
+        
+        if home:
+            self._ptc.tilt(deg=0)
+            self._pub_tilt.publish(0.0)
+            self._ptc.pan(deg=0)
+            self._pub_pan.publish(0.0)
+            self._ptc.brightness(brightness)
+            self._pub_brightness.publish(brightness)
+        self._ptc.laser = False
+        self._ptc.status_led = True
+        self._pub_power.publish(False)
+
+    def handle_set_pan(self, req):
+        self._ptc.pan(deg=req.value)
+        self._pub_pan.publish(req.value)
+        return laser_pan_tilt.srv.SetFloatResponse()
+
+    def handle_set_tilt(self, req):
+        self._ptc.tilt(deg=req.value)
+        self._pub_tilt.publish(req.value)
+        return laser_pan_tilt.srv.SetFloatResponse()
+
+    def handle_set_brightness(self, req):
+        self._ptc.brightness(req.value)
+        self._pub_brightness.publish(req.value)
+        return laser_pan_tilt.srv.SetFloatResponse()
+
+    def handle_set_power(self, req):
+        self._ptc.laser = req.power
+        self._pub_power.publish(req.power)
+        return laser_pan_tilt.srv.SetPowerResponse()
+
+    def spin(self):
+        rospy.spin()
+        self._ptc.status_led = False
+        self._ptc.laser = False
+
+if __name__ == "__main__":
+    rospy.init_node('laserpantilt')
+    r = ROSPanTilt(
+            rospy.get_param('~ip', '192.168.1.60'),
+            rospy.get_param('~brightness', 1.0),
+            rospy.get_param('~home', True),
+            rospy.get_param('~debug', False),
+            rospy.get_param('~check_response', False),
+            rospy.get_param('~wait', True))
+    r.spin()
+

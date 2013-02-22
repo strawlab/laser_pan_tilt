@@ -23,8 +23,8 @@ class PTController(object):
     
     MIN_TILT = math.radians(-55)
     MAX_TILT = math.radians(60)
-    MIN_PAN = math.radians(-180)
-    MAX_PAN = math.radians(180)
+    MIN_PAN = math.radians(-160)
+    MAX_PAN = math.radians(160)
 
     def __init__(self, ip='192.168.1.60', debug=True, check_response=True):
         self._ip = ip
@@ -36,7 +36,7 @@ class PTController(object):
         self._status_led = False
         self._debug_enable = debug
         self._check_response = check_response
-        
+
     def _debug(self, msg, send):
         if self._debug_enable:
             print "-->" if send else "<--",

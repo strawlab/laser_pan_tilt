@@ -6,6 +6,8 @@
   </description>
   <author>John Stowers</author>
 
+  <depend package="rospy"/>
+
 </package>
 
 
